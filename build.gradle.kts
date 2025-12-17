@@ -41,7 +41,7 @@ val nonSampleProjects =  subprojects.filterNot { it.isSampleProject() }
 
 allprojects {
 
-    group = "com.epages"
+    group = "io.github.dev-inho"
     version = scmVer
 
     if (!isSampleProject()) {
