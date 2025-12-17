@@ -5,40 +5,57 @@ import com.epages.restdocs.apispec.model.FieldDescriptor
 
 internal object ConstraintResolver {
 
-    // since validation-api 2.0 NotEmpty moved to javax.validation - we support both
+    // since validation-api 2.0 NotEmpty moved to javax.validation - we support both javax and jakarta
     private val NOT_EMPTY_CONSTRAINTS = setOf(
         "org.hibernate.validator.constraints.NotEmpty",
-        "javax.validation.constraints.NotEmpty"
+        "javax.validation.constraints.NotEmpty",
+        "jakarta.validation.constraints.NotEmpty"
     )
 
     private val NOT_BLANK_CONSTRAINTS = setOf(
         "javax.validation.constraints.NotBlank",
-        "org.hibernate.validator.constraints.NotBlank"
+        "org.hibernate.validator.constraints.NotBlank",
+        "jakarta.validation.constraints.NotBlank"
     )
 
-    private val REQUIRED_CONSTRAINTS = setOf("javax.validation.constraints.NotNull")
+    private val REQUIRED_CONSTRAINTS = setOf(
+        "javax.validation.constraints.NotNull",
+        "jakarta.validation.constraints.NotNull"
+    )
         .plus(NOT_EMPTY_CONSTRAINTS)
         .plus(NOT_BLANK_CONSTRAINTS)
 
     private const val LENGTH_CONSTRAINT = "org.hibernate.validator.constraints.Length"
 
-    private const val SIZE_CONSTRAINT = "javax.validation.constraints.Size"
+    private val SIZE_CONSTRAINTS = setOf(
+        "javax.validation.constraints.Size",
+        "jakarta.validation.constraints.Size"
+    )
 
-    private const val PATTERN_CONSTRAINT = "javax.validation.constraints.Pattern"
+    private val PATTERN_CONSTRAINTS = setOf(
+        "javax.validation.constraints.Pattern",
+        "jakarta.validation.constraints.Pattern"
+    )
 
-    private const val MIN_CONSTRAINT = "javax.validation.constraints.Min"
+    private val MIN_CONSTRAINTS = setOf(
+        "javax.validation.constraints.Min",
+        "jakarta.validation.constraints.Min"
+    )
 
-    private const val MAX_CONSTRAINT = "javax.validation.constraints.Max"
+    private val MAX_CONSTRAINTS = setOf(
+        "javax.validation.constraints.Max",
+        "jakarta.validation.constraints.Max"
+    )
 
     internal fun maybeMinSizeArray(fieldDescriptor: FieldDescriptor?) = fieldDescriptor?.maybeSizeConstraint()?.let { it.configuration["min"] as? Int }
 
     internal fun maybeMaxSizeArray(fieldDescriptor: FieldDescriptor?) = fieldDescriptor?.maybeSizeConstraint()?.let { it.configuration["max"] as? Int }
 
-    private fun FieldDescriptor.maybeSizeConstraint() = findConstraints(this).firstOrNull { SIZE_CONSTRAINT == it.name }
+    private fun FieldDescriptor.maybeSizeConstraint() = findConstraints(this).firstOrNull { SIZE_CONSTRAINTS.contains(it.name) }
 
     internal fun maybePattern(fieldDescriptor: FieldDescriptor?) = fieldDescriptor?.maybePatternConstraint()?.let { it.configuration["regexp"] as? String }
 
-    private fun FieldDescriptor.maybePatternConstraint() = findConstraints(this).firstOrNull { PATTERN_CONSTRAINT == it.name }
+    private fun FieldDescriptor.maybePatternConstraint() = findConstraints(this).firstOrNull { PATTERN_CONSTRAINTS.contains(it.name) }
 
     internal fun minLengthString(fieldDescriptor: FieldDescriptor): Int? {
         return findConstraints(fieldDescriptor)
@@ -61,9 +78,9 @@ internal object ConstraintResolver {
     internal fun minInteger(fieldDescriptor: FieldDescriptor): Int? {
         return findConstraints(fieldDescriptor)
             .mapNotNull {
-                when (it.name) {
-                    MIN_CONSTRAINT -> it.configuration["value"] as Int
-                    SIZE_CONSTRAINT -> it.configuration["min"] as? Int
+                when {
+                    MIN_CONSTRAINTS.contains(it.name) -> it.configuration["value"] as Int
+                    SIZE_CONSTRAINTS.contains(it.name) -> it.configuration["min"] as? Int
                     else -> null
                 }
             }
@@ -73,9 +90,9 @@ internal object ConstraintResolver {
     internal fun maxInteger(fieldDescriptor: FieldDescriptor): Int? {
         return findConstraints(fieldDescriptor)
             .mapNotNull {
-                when (it.name) {
-                    MAX_CONSTRAINT -> it.configuration["value"] as Int
-                    SIZE_CONSTRAINT -> it.configuration["max"] as? Int
+                when {
+                    MAX_CONSTRAINTS.contains(it.name) -> it.configuration["value"] as Int
+                    SIZE_CONSTRAINTS.contains(it.name) -> it.configuration["max"] as? Int
                     else -> null
                 }
             }
